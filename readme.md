@@ -1,11 +1,9 @@
 ## This template uses
 
-- An actions-on-google action consisting in a dialogflow conversation.
 - A dialogflow fulfillment environment.
 
 ## Steps for reproducing the project
 
-1. [Create an Actions on Google project.](#actions_on_google_project)
 2. [Create a Dialogflow project.](#dialogflow_project)
 
 ## <a name="dialogflow_project"></a> Create a Dialogflow project
