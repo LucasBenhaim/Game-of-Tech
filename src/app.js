@@ -2,16 +2,14 @@
 
 const axios = require('axios');
 const express = require('express');
-// const functions = require('firebase-functions');
 const { dialogflow, SimpleResponse } = require('actions-on-google');
 
 const app = express();
 app.use(express.json())
 
-const token = "Bearer at-e2a833b8-d94b-442c-8b52-cd16d379db5c"; // to set manually with Bearer
+const token = ""; // to set manually with Bearer
 
-// exports.yourAction = functions.https.onRequest(app);
-
+//Linkage of intent to function
 const dialogflowApp = dialogflow();
 dialogflowApp.intent('Default Fallback Intent', fallback);
 dialogflowApp.intent('Default Welcome Intent', welcome);
@@ -35,7 +33,7 @@ function fallback(conv) {
 function oui(conv) {
     conv.add(`Nous allons donc procéder à la création du compte, nous nécessiterons des informations personnelles. Veuillez saisir votre date de naissance.`);
 }
-
+// Setup the email, and make a post request with axios to check if the email is valid
 function setEmail(conv) {
     if (!token) {
         conv.add('Utilisateur non connecté.');
@@ -64,6 +62,7 @@ function setEmail(conv) {
 }
 
 function setBirthDate(conv) {
+    //conv.parameters.birthDate is a parameter set in the intent section
     conv.parameters.birthDate = conv.parameters.birthDate.replace('-', '');
     conv.parameters.birthDate = conv.parameters.birthDate.replace('-', '');
     conv.parameters.birthDate = conv.parameters.birthDate.slice(0, 8);
@@ -105,12 +104,14 @@ function setTitle(conv) {
 // }
 
 function createCustomer(conv) {
+    //Checking if every values is set (not null)
     if (!conv.contexts.input.forfait.parameters.birthDate || !conv.contexts.input.forfait.parameters.birthDepartement ||
         !conv.contexts.input.forfait.parameters.Name.name || !conv.contexts.input.forfait.parameters.phoneNumber ||
         !conv.contexts.input.forfait.parameters.title || !token) {
         !conv.close('Not all values are set.');
         return;
     }
+    //Making the variables be in the right format
     var bDay = conv.contexts.input.forfait.parameters.birthDate;
     bDay = bDay.replace('-', '');
     bDay = bDay.replace('-', '');
@@ -127,6 +128,7 @@ function createCustomer(conv) {
     console.log(bDay, bDepartment, conv.contexts.input.forfait.parameters.email,
         firstName, lastName, conv.contexts.input.forfait.parameters.phoneNumber, title);
 
+    // Axios post request to create an user account everythings should be a string
     return axios.post('https://open.api.sandbox.bouyguestelecom.fr/ap4/customer-management/v1/customer-accounts', {
         birthDate: bDay,
         birthDepartment: bDepartment,
@@ -157,6 +159,7 @@ app.get("/", (req, res) => {
 
 app.post('/webhook', dialogflowApp);
 
+// Called each time a function with conv parameters is called
 dialogflowApp.middleware(function (conv) {
     console.log('intent: ' + conv.intent);
     console.log('params: ' + JSON.stringify(conv.parameters));
@@ -165,7 +168,8 @@ dialogflowApp.middleware(function (conv) {
     return conv;
 });
 
+
+//Server listening on port 3000 with ngrok http 3000
 app.listen(3000, () => {
     console.log("consodata webhook running on port 3000");
 });
-// exports.dialogflowFirebaseFulfillment = functions.https.onRequest(app);
