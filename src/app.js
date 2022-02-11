@@ -90,6 +90,7 @@ function setTitle(conv) {
     conv.add(`Vous êtes ${conv.parameters.title}. Quel est votre numéro de téléphone ?`);
 }
 
+// This function should be called to retrieve a token
 // function getOauth2token(conv) {
 //     axios.post(`https://oauth2.sandbox.bouyguestelecom.fr/ap4/token`, {
 //         grant_type: "client_credentials"
