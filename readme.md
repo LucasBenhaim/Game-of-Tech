@@ -21,4 +21,4 @@
 ## <a name="test the project"></a> 
 
 1. Go to dialogflow, in the agent section select export and import, unzip the .zip file in this github and import it
-2. On the right side of your screen there's a microphone and a text console, you can use it to try out the project
+2. On the right side of your screen there's a microphone and a text console, you can use it to try out the project, beware dialogflow needs to be in french, you can activate it in the languages section in the agent
