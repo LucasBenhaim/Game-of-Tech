@@ -25,7 +25,7 @@ dialogflowApp.intent('Email', setEmail);
 dialogflowApp.intent('Creation', createCustomer);
 
 function welcome(conv) {
-    conv.add(`Welcome to my agent!`);
+    conv.add(`Bonjour.`);
 }
 
 function fallback(conv) {
@@ -143,7 +143,7 @@ function createCustomer(conv) {
         }
     }).then((res) => {
         if (res.status == 204) {
-            conv.close('Your account has been created :).');
+            conv.close('Votre compte Bouygues Telecom a été crée :).');
         }
     }).catch((error) => {
         console.error(error);
