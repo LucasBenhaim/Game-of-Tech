@@ -8,7 +8,7 @@ const { dialogflow, SimpleResponse } = require('actions-on-google');
 const app = express();
 app.use(express.json())
 
-const token = ""; // to set
+const token = "Bearer at-e2a833b8-d94b-442c-8b52-cd16d379db5c"; // to set manually with Bearer
 
 // exports.yourAction = functions.https.onRequest(app);
 
@@ -22,6 +22,7 @@ dialogflowApp.intent('Name', setName);
 dialogflowApp.intent('Title', setTitle);
 dialogflowApp.intent('Phone', setPhoneNumber);
 dialogflowApp.intent('Email', setEmail);
+dialogflowApp.intent('Creation', createCustomer);
 
 function welcome(conv) {
     conv.add(`Welcome to my agent!`);
@@ -32,7 +33,7 @@ function fallback(conv) {
 }
 
 function oui(conv) {
-    conv.add(`Nous allons donc procéder à la création du compte, nous nécessiterons des informations personnelles. Veuillez saisir votre addresse date de naissance.`);
+    conv.add(`Nous allons donc procéder à la création du compte, nous nécessiterons des informations personnelles. Veuillez saisir votre date de naissance.`);
 }
 
 function setEmail(conv) {
@@ -51,7 +52,7 @@ function setEmail(conv) {
     }).then((res) => {
         console.log('checkEmail response: ' + JSON.stringify(res.data));
         if ((res.data.validEmailAddress && res.data.contactEmailAddress)) { // res.data.contactEmailAddress == false mais si c'est le vrai code
-            conv.add('email is valid.');
+            conv.add('votre email est valide, veuillez écrire "Je veux procéder à création de mon compte".');
         } else {
             conv.add('wrong email, or you already have a bouygues telecom account.');
         }
@@ -90,18 +91,18 @@ function setTitle(conv) {
     conv.add(`Vous êtes ${conv.parameters.title}. Quel est votre numéro de téléphone ?`);
 }
 
-function getOauth2token(conv) {
-    axios.post(`https://oauth2.sandbox.bouyguestelecom.fr/ap4/token`, {
-        grant_type: "client_credentials"
-    }, {
-        headers: {
-            Authorization: "Basic cGFydGVuYWlyZS5lbGJhLmJvdXlndWVzdGVsZWNvbS5mcjpuazZYRnNtREpTNmRtZVBy"
-        },
-    }).then((res) => {
-        agent.add(res);
-        token = res.data.token_type + " " + res.data.access_token;
-    });
-}
+// function getOauth2token(conv) {
+//     axios.post(`https://oauth2.sandbox.bouyguestelecom.fr/ap4/token`, {
+//         grant_type: "client_credentials"
+//     }, {
+//         headers: {
+//             Authorization: "Basic cGFydGVuYWlyZS5lbGJhLmJvdXlndWVzdGVsZWNvbS5mcjpuazZYRnNtREpTNmRtZVBy"
+//         },
+//     }).then((res) => {
+//         agent.add(res);
+//         token = res.data.token_type + " " + res.data.access_token;
+//     });
+// }
 
 function createCustomer(conv) {
     if (!conv.contexts.input.forfait.parameters.birthDate || !conv.contexts.input.forfait.parameters.birthDepartement ||
@@ -121,12 +122,14 @@ function createCustomer(conv) {
     var title = "M";
     if (conv.contexts.input.forfait.parameters.title == "Madame")
         title = "MME";
-    console.log(bDay, conv.contexts.input.forfait.parameters.birthDepartement, conv.contexts.input.forfait.parameters.email,
+    var bDeptmp = conv.contexts.input.forfait.parameters.birthDepartement;
+    var bDepartment = bDeptmp.toString();
+    console.log(bDay, bDepartment, conv.contexts.input.forfait.parameters.email,
         firstName, lastName, conv.contexts.input.forfait.parameters.phoneNumber, title);
 
     return axios.post('https://open.api.sandbox.bouyguestelecom.fr/ap4/customer-management/v1/customer-accounts', {
         birthDate: bDay,
-        birthDepartement: conv.contexts.input.forfait.parameters.birthDepartement,
+        birthDepartment: bDepartment,
         emailAddress: conv.contexts.input.forfait.parameters.email,
         firstName: firstName,
         lastName: lastName,
@@ -134,6 +137,8 @@ function createCustomer(conv) {
         title: title,
     }, {
         headers: {
+            "x-banc": "ap23",
+            "x-version": 4,
             Authorization: token
         }
     }).then((res) => {
@@ -142,7 +147,7 @@ function createCustomer(conv) {
         }
     }).catch((error) => {
         console.error(error);
-        conv.close('Bad response from API.');
+        conv.close('Bad response from API, your account has not been created.');
     });
 }
 
@@ -161,6 +166,6 @@ dialogflowApp.middleware(function (conv) {
 });
 
 app.listen(3000, () => {
-    console.log("consodata webhook running on port 80");
+    console.log("consodata webhook running on port 3000");
 });
 // exports.dialogflowFirebaseFulfillment = functions.https.onRequest(app);
